@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco model="exo_biped">
+
+  <compiler angle="degree" coordinate="local" inertiafromgeom="false"/>
+  <option timestep="0.002" integrator="RK4"/>
+  <size nstack="3000"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" width="512" height="512" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" mark="edge" markrgb="0.8 0.8 0.8"/>
+    <material name="grid" texture="grid" texrepeat="1 1" texuniform="true"/>
+  </asset>
+
+  <worldbody>
+    <!-- Ground -->
+    <geom name="floor" type="plane" pos="0 0 0" size="10 10 0.1" material="grid" condim="3"/>
+
+    <!-- Torso: floating base -->
+    <body name="torso" pos="0 0 1.0">
+      <joint name="base" type="free"/>
+      <!-- explicit inertial for torso: box 0.2×0.3×0.4, mass=40 kg -->
+      <inertial pos="0 0 0" mass="40"
+                diaginertia="0.833 0.667 0.433"/>
+      <geom name="torso_geom" type="box" size="0.1 0.15 0.2" rgba="0.7 0.7 0.7 1"/>
+
+      <!-- IMU site on torso -->
+      <site name="torso_imu_site" pos="0 0 0" size="0.02" rgba="1 0 0 0.5"/>
+
+      <!-- Right leg -->
+      <body name="right_hip" pos="0 -0.1 -0.2">
+        <!-- revolute hip -->
+        <joint name="right_hip" type="hinge" axis="0 1 0" range="-60 60"/>
+        <!-- inertial: capsule length=0.3, r=0.05, mass=10 kg -->
+        <inertial pos="0 0 -0.15" mass="10"
+                  diaginertia="0.081 0.081 0.0125"/>
+        <geom name="right_thigh" type="capsule" size="0.05"
+              fromto="0 0 0 0 0 -0.3" rgba="0.7 0.3 0.3 1"/>
+
+        <body name="right_knee" pos="0 0 -0.3">
+          <joint name="right_knee" type="hinge" axis="0 1 0" range="0 90"/>
+          <!-- inertial: capsule length=0.3, r=0.04, mass=7 kg -->
+          <inertial pos="0 0 -0.15" mass="7"
+                    diaginertia="0.055 0.055 0.0056"/>
+          <geom name="right_shank" type="capsule" size="0.04"
+                fromto="0 0 0 0 0 -0.3" rgba="0.7 0.3 0.3 1"/>
+
+          <body name="right_ankle" pos="0 0 -0.3">
+            <joint name="right_ankle" type="hinge" axis="0 1 0" range="-45 45"/>
+            <!-- inertial: box 0.2×0.1×0.1, mass=2 kg -->
+            <inertial pos="0 0 -0.05" mass="2"
+                      diaginertia="0.0033 0.0083 0.0083"/>
+            <geom name="right_foot" type="box" size="0.1 0.05 0.05"
+                  rgba="0.3 0.3 0.7 1"/>
+            <site name="right_foot_sensor_site" pos="0 0 -0.05" size="0.01" rgba="1 1 1 0"/>
+          </body>
+        </body>
+      </body>
+
+      <!-- Left leg (mirror of right) -->
+      <body name="left_hip" pos="0 0.1 -0.2">
+        <joint name="left_hip" type="hinge" axis="0 1 0" range="-60 60"/>
+        <inertial pos="0 0 -0.15" mass="10"
+                  diaginertia="0.081 0.081 0.0125"/>
+        <geom name="left_thigh" type="capsule" size="0.05"
+              fromto="0 0 0 0 0 -0.3" rgba="0.3 0.7 0.3 1"/>
+
+        <body name="left_knee" pos="0 0 -0.3">
+          <joint name="left_knee" type="hinge" axis="0 1 0" range="0 90"/>
+          <inertial pos="0 0 -0.15" mass="7"
+                    diaginertia="0.055 0.055 0.0056"/>
+          <geom name="left_shank" type="capsule" size="0.04"
+                fromto="0 0 0 0 0 -0.3" rgba="0.3 0.7 0.3 1"/>
+
+          <body name="left_ankle" pos="0 0 -0.3">
+            <joint name="left_ankle" type="hinge" axis="0 1 0" range="-45 45"/>
+            <inertial pos="0 0 -0.05" mass="2"
+                      diaginertia="0.0033 0.0083 0.0083"/>
+            <geom name="left_foot" type="box" size="0.1 0.05 0.05"
+                  rgba="0.3 0.3 0.7 1"/>
+            <site name="left_foot_sensor_site" pos="0 0 -0.05" size="0.01" rgba="1 1 1 0"/>
+          </body>
+        </body>
+      </body>
+
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="right_hip" joint="right_hip" gear="100"/>
+    <motor name="right_knee" joint="right_knee" gear="100"/>
+    <motor name="right_ankle" joint="right_ankle" gear="100"/>
+    <motor name="left_hip" joint="left_hip" gear="100"/>
+    <motor name="left_knee" joint="left_knee" gear="100"/>
+    <motor name="left_ankle" joint="left_ankle" gear="100"/>
+  </actuator>
+
+<sensor>
+  <!-- foot contact -->
+  <force  name="right_foot_force"  site="right_foot_sensor_site"/>
+  <torque name="right_foot_torque" site="right_foot_sensor_site"/>
+  <force  name="left_foot_force"   site="left_foot_sensor_site"/>
+  <torque name="left_foot_torque"  site="left_foot_sensor_site"/>
+
+  <!-- torso IMU -->
+  <framequat     name="torso_orientation" objtype="body" objname="torso"/>
+  <accelerometer name="torso_accelerometer" site="torso_imu_site"/>
+  <gyro          name="torso_gyro"         site="torso_imu_site"/>
+</sensor>
+
+</mujoco>
