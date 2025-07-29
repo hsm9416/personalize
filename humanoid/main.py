@@ -4,15 +4,16 @@ import os
 import numpy as np
 import mujoco.viewer
 import time
+import floating_base_jacobians
+import inverse_kinematics
 from model_loader import load_model
-from inverse_kinematics import join_configurations
 
 
 if __name__ == "__main__":
 
-    model, data = load_model("./models/humanoid.xml")
+    model, data = load_model()
 
-    q_total = join_configurations(model, data)
+    # q_total = join_configurations(model, data)
 
     with mujoco.viewer.launch_passive(model, data) as viewer:
         start_wall_time = time.time()
@@ -23,13 +24,28 @@ if __name__ == "__main__":
             elapsed = time.time() - start_wall_time
 
             # 실제 5초 경과 후 중력 복원
-            if not gravity_on and elapsed >= 3.0:
+            if not gravity_on and elapsed >= 1.0: 
                model.opt.gravity[2] = -9.81
                gravity_on = True
             #    print(f"▶ 중력 복원됨 (실시간 경과: {elapsed:.2f}s)")
 
             mujoco.mj_step(model, data)
             viewer.sync()
+
+            J_cog = floating_base_jacobians.compute_cog_jacobian(model, data)
+
+            nv = model.nv
+            k = 6    # number of constraints (e.g., foot contacts)
+            m = 3    # task dimension (e.g., end-effector xyz velocity)
+
+            J_c = np.random.randn(k, nv)     # constraint Jacobian
+            J_task = np.random.randn(m, nv)  # task Jacobian (e.g. hand or foot)
+            xdot_desired = np.array([0.0, 0.0, -0.1])  # move downward
+
+            qdot = inverse_kinematics.compute_floating_base_qdot(J_c, J_task, xdot_desired)
+
+
+            print(f"▶ J_cog: {qdot}")
 
             # print(q_total.shape)  # Print the total configuration state
 
