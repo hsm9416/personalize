@@ -17,7 +17,7 @@
 
     
     <body name="torso" pos="0 0 1.0">
-      <!-- <joint name="base" type="free" />  -->
+      <joint name="base" type="free" /> 
       
       <inertial pos="0 0 0" mass="40" diaginertia="0.833 0.667 0.433" />
       <geom name="torso_geom" type="box" size="0.1 0.15 0.2" rgba="0.7 0.7 0.7 1" />

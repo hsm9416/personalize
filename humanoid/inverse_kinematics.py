@@ -36,7 +36,7 @@ def compute_floating_base_qdot(J_c, J_task, xdot_desired):
 
 def compute_ik_with_conditions(J, J_c, Jc_Xb, q_dot, J_task, xdot_desired):
     if check_condition_1(J_c, q_dot):
-        print("▶ Using IK (Condition 1: Xc = 0)")
+        # print("▶ Using IK (Condition 1: Xc = 0)")
         return compute_floating_base_qdot(J_c, J_task, xdot_desired)
     elif check_condition_2(J, J_c):
         print("▶ Using IK (Condition 2: full rank)")
