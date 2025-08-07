@@ -26,11 +26,13 @@ if __name__ == "__main__":
         right_foot_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "right_ankle")
         print(f"left_foot_id: {left_foot_id}, right_foot_id: {right_foot_id}")
 
-        left_foot_target = data.xpos[left_foot_id].copy() + np.array([0.1, 0.1, 0.1])
-        right_foot_target = data.xpos[right_foot_id].copy() + np.array([-0.1, -0.1, 0.1])
+        # left_foot_target = data.xpos[left_foot_id].copy() + np.array([0.1, 0.1, 0.1])
+        left_foot_target = data.xpos[left_foot_id].copy() 
+        # right_foot_target = data.xpos[right_foot_id].copy() + np.array([-0.1, -0.1, 0.1])
+        right_foot_target = data.xpos[right_foot_id].copy()
         cog_xy_target = data.subtree_com[0][:2].copy()
 
-        Kp = 1.0
+        Kp = 10.0
 
         while viewer.is_running():
             mujoco.mj_step1(model, data)
